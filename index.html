@@ -49,7 +49,6 @@
       height:100dvh;
       max-height:100dvh;
     }
-    }
 
     header{
       padding:18px 20px 14px;
@@ -150,10 +149,11 @@
       display:flex;
       flex-direction:column;
       gap:14px;
-      /* IMPORTANTE: permitir scroll vertical no mobile */
+      /* scroll único: a página rola aqui */
       overflow-y:auto;
       overflow-x:hidden;
       flex:1;
+      min-height:0; /* essencial em flex para o scroll funcionar direito */
       -webkit-overflow-scrolling: touch;
     }
 
@@ -216,11 +216,9 @@
       list-style:none;
       border:1px solid var(--line);
       border-radius: 14px;
-      overflow:auto;
+      /* NÃO ter scroll próprio (evita "scroll dentro do scroll") */
+      overflow: visible;
       background: rgba(0,0,0,.18);
-      -webkit-overflow-scrolling: touch;
-      flex:1;
-      min-height: 140px;
     }
 
     .item{
@@ -289,7 +287,6 @@
         padding-bottom: max(12px, env(safe-area-inset-bottom));
         align-items:stretch;
         justify-content:stretch;
-        /* permite scroll da página se necessário */
         overflow-y:auto;
       }
       .app{
