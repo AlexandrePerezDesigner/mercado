@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de Mercado</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --muted:#8ea0c2;
+      --text:#eaf0ff;
+      --line:rgba(255,255,255,.08);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 18px;
+      --ok:#43ffb2;
+      --warn:#ffd36b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, #1b2b55 0%, transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, #23366b 0%, transparent 55%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      min-height:100dvh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      padding-left: max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+      padding-top: max(24px, env(safe-area-inset-top));
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    .app{
+      width:min(760px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      max-height: calc(100dvh - 48px);
+    }
+
+    header{
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--line);
+      display:grid;
+      gap:10px;
+    }
+
+    .top{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    h1{ margin:0; font-size:22px; letter-spacing:.2px; line-height:1.1; }
+    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+
+    .badge{
+      font-size:12px;
+      color:var(--muted);
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+
+    .progress-wrap{ display:grid; gap:8px; }
+    .progress-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(67,255,178,.2), rgba(67,255,178,.65));
+    }
+
+    .controls{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-size:13px;
+      user-select:none;
+    }
+    .switch{
+      width:46px;
+      height:28px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      position:relative;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .switch i{
+      position:absolute;
+      top:50%;
+      left:3px;
+      transform:translateY(-50%);
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      background: rgba(255,255,255,.14);
+      border:1px solid var(--line);
+      transition: left .18s ease, background .18s ease;
+    }
+    .switch.on{
+      background: rgba(67,255,178,.12);
+      border-color: rgba(67,255,178,.25);
+    }
+    .switch.on i{ left:21px; background: rgba(67,255,178,.25); }
+
+    .content{
+      padding:16px 20px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      overflow:hidden;
+      flex:1;
+    }
+
+    .bulk{ display:grid; gap:10px; }
+    .hint{ color: var(--muted); font-size:12px; }
+
+    textarea{
+      width:100%;
+      min-height:130px;
+      resize:vertical;
+      background: rgba(0,0,0,.20);
+      border:1px solid var(--line);
+      border-radius: 12px;
+      padding:12px 12px;
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    .bulk-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+    }
+    .btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+    .chipsTitle{ color:var(--muted); font-size:12px; }
+
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .chip{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.14);
+      color: var(--text);
+      padding:8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .chip b{ color: var(--warn); font-weight:800; }
+
+    .list{
+      margin:0;
+      padding:0;
+      list-style:none;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      overflow:auto;
+      background: rgba(0,0,0,.18);
+      -webkit-overflow-scrolling: touch;
+      flex:1;
+      min-height: 140px;
+    }
+
+    .item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-top:1px solid var(--line);
+    }
+    .item:first-child{ border-top:0; }
+
+    .left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+
+    .check{ width:18px; height:18px; accent-color: var(--ok); }
+
+    .qty{ display:flex; align-items:center; gap:6px; margin-left:2px; }
+    .qty button{
+      width:30px;
+      height:30px;
+      border-radius: 10px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      cursor:pointer;
+      font-weight:800;
+    }
+    .qty span{ min-width:20px; text-align:center; color: var(--muted); font-size:13px; }
+
+    .text{ font-size:15px; word-break:break-word; line-height:1.2; }
+    .item.done .text{ text-decoration: line-through; opacity:.7; }
+
+    .icon-btn{
+      width:36px;
+      height:36px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+
+    .footer{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .empty{ color: var(--muted); font-size:12px; }
+
+    /* Modo Mercado: targets maiores + menos risco de apagar */
+    .market .item{ padding:14px 12px; }
+    .market .icon-btn{ display:none; }
+    .market .check{ width:22px; height:22px; }
+    .market .qty button{ width:36px; height:36px; }
+
+    /* Mobile-first ajustes */
+    @media (max-width: 520px){
+      body{
+        padding:12px;
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        align-items:stretch;
+        justify-content:stretch;
+      }
+      .app{ width:100%; max-height:none; height:100dvh; border-radius: 16px; }
+      header{ padding:16px 16px 12px; }
+      .content{ padding:14px 16px 16px; }
+      h1{ font-size:20px; }
+      .sub{ font-size:12px; }
+      textarea{ min-height:120px; font-size:16px; }
+      .bulk-actions{ display:grid; grid-template-columns: 1fr; gap:10px; justify-content:stretch; }
+      .btn{ width:100%; padding:14px 14px; font-size:15px; }
+      .icon-btn{ width:42px; height:42px; }
+      .text{ font-size:16px; }
+      .qty button{ width:36px; height:36px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <header>
+      <div class="top">
+        <div>
+          <h1>🛒 Lista de Mercado</h1>
+          <p class="sub">Cole sua lista e marque quando comprar</p>
+        </div>
+        <div class="badge" id="count">0 itens</div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-row">
+          <span id="progressText">0% concluído</span>
+          <span id="progressNums">0/0</span>
+        </div>
+        <div class="bar" aria-label="Progresso"><i id="barFill"></i></div>
+      </div>
+
+      <div class="controls">
+        <div class="toggle">
+          <div class="switch" id="marketSwitch" role="switch" aria-checked="false" tabindex="0"><i></i></div>
+          <span>Modo Mercado</span>
+        </div>
+        <div class="badge" id="learnBadge">Sugestões: 0</div>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="bulk">
+        <div class="hint">Faça sua lista de compras. Atalho: Ctrl/Cmd + Enter</div>
+        <textarea id="bulk" placeholder="Pão
+Iogurte
+Suco
+Banana"></textarea>
+        <div class="bulk-actions">
+          <button class="btn" id="addBulk" type="button">Adicionar à lista</button>
+          <button class="btn" id="clearBulk" type="button">Limpar campo</button>
+        </div>
+      </div>
+
+      <div class="chipsTitle" id="chipsTitle">Sugestões (toque para adicionar):</div>
+      <div class="chips" id="chips"></div>
+
+      <ul class="list" id="list"></ul>
+
+      <div class="footer">
+        <div class="empty" id="emptyHint">A lista está vazia.</div>
+        <button class="btn" id="clearList" type="button">Limpar lista</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Persistência simples (localStorage)
+    var LS_ITEMS = 'market_list_items_v3';
+    var LS_CATALOG = 'market_list_catalog_v3';
+    var LS_MARKET = 'market_list_marketmode_v3';
+
+    var CR = String.fromCharCode(13);
+    var LF = String.fromCharCode(10);
+
+    var appEl = document.getElementById('app');
+    var bulk = document.getElementById('bulk');
+    var addBulkBtn = document.getElementById('addBulk');
+    var clearBulkBtn = document.getElementById('clearBulk');
+    var clearListBtn = document.getElementById('clearList');
+    var list = document.getElementById('list');
+
+    var count = document.getElementById('count');
+    var emptyHint = document.getElementById('emptyHint');
+    var progressText = document.getElementById('progressText');
+    var progressNums = document.getElementById('progressNums');
+    var barFill = document.getElementById('barFill');
+
+    var chips = document.getElementById('chips');
+    var chipsTitle = document.getElementById('chipsTitle');
+    var learnBadge = document.getElementById('learnBadge');
+
+    var marketSwitch = document.getElementById('marketSwitch');
+
+    // item = { id, name, qty, done, createdAt }
+    // catalog = { nameLower: { name, count, lastUsed } }
+    var items = [];
+    var catalog = {};
+    var marketMode = false;
+
+    function uid(){
+      return (Math.random().toString(16).slice(2) + Date.now().toString(16));
+    }
+
+    function save(){
+      localStorage.setItem(LS_ITEMS, JSON.stringify(items));
+      localStorage.setItem(LS_CATALOG, JSON.stringify(catalog));
+      localStorage.setItem(LS_MARKET, JSON.stringify(marketMode));
+    }
+
+    function load(){
+      try{
+        var rawItems = JSON.parse(localStorage.getItem(LS_ITEMS) || '[]');
+        var rawCatalog = JSON.parse(localStorage.getItem(LS_CATALOG) || '{}');
+        var rawMarket = JSON.parse(localStorage.getItem(LS_MARKET) || 'false');
+
+        if(Array.isArray(rawItems)){
+          items = rawItems.filter(Boolean).map(function(x){
+            return {
+              id: x.id || uid(),
+              name: String(x.name || '').trim(),
+              qty: Number.isFinite(+x.qty) ? Math.max(1, Math.round(+x.qty)) : 1,
+              done: !!x.done,
+              createdAt: Number.isFinite(+x.createdAt) ? +x.createdAt : Date.now()
+            };
+          }).filter(function(x){ return x.name; });
+        }else{
+          items = [];
+        }
+
+        catalog = (rawCatalog && typeof rawCatalog === 'object') ? rawCatalog : {};
+        marketMode = !!rawMarket;
+      }catch(e){
+        items = [];
+        catalog = {};
+        marketMode = false;
+      }
+    }
+
+    function normalizeNewlines(text){
+      var s = String(text);
+      // CRLF -> LF, CR -> LF, sem regex
+      s = s.split(CR + LF).join(LF);
+      s = s.split(CR).join(LF);
+      return s;
+    }
+
+    function clampQty(n){
+      var q = parseInt(n, 10);
+      if(!Number.isFinite(q)) q = 1;
+      q = Math.max(1, Math.min(99, q));
+      return q;
+    }
+
+    // Quantidade simples: "2x pão", "pão x2", "pão 2"
+    function parseLine(line){
+      var s = String(line || '').trim();
+      if(!s) return null;
+
+      // Caso 1: começa com número
+      var i = 0;
+      while(i < s.length && s.charCodeAt(i) >= 48 && s.charCodeAt(i) <= 57) i++;
+
+      // 2x Pão
+      if(i > 0){
+        var rest = s.slice(i).trim();
+        if(rest.length >= 2){
+          var first = rest.charAt(0);
+          if(first === 'x' || first === 'X'){
+            var name1 = rest.slice(1).trim();
+            if(name1) return { qty: clampQty(s.slice(0,i)), name: name1 };
+          }
+        }
+      }
+
+      // Caso 2: termina com número (pão 2)
+      var j = s.length - 1;
+      while(j >= 0 && s.charAt(j) === ' ') j--;
+      var end = j;
+      while(j >= 0){
+        var c = s.charCodeAt(j);
+        if(c >= 48 && c <= 57) j--; else break;
+      }
+      var startNum = j + 1;
+      if(startNum <= end){
+        var numStr = s.slice(startNum, end + 1);
+        var before = s.slice(0, startNum).trim();
+        if(before.length >= 2){
+          // pão x2
+          var lastChar = before.charAt(before.length - 1);
+          if(lastChar === 'x' || lastChar === 'X'){
+            var name2 = before.slice(0, -1).trim();
+            if(name2) return { qty: clampQty(numStr), name: name2 };
+          }
+          // pão 2
+          return { qty: clampQty(numStr), name: before };
+        }
+      }
+
+      return { qty: 1, name: s };
+    }
+
+    function learn(name){
+      var key = String(name).toLowerCase();
+      var now = Date.now();
+      if(!catalog[key]){
+        catalog[key] = { name: name, count: 1, lastUsed: now };
+      }else{
+        catalog[key].count = (catalog[key].count || 0) + 1;
+        catalog[key].lastUsed = now;
+        catalog[key].name = name;
+      }
+    }
+
+    function addItemsFromText(text){
+      var normalized = normalizeNewlines(text);
+      var lines = normalized.split(LF).map(function(x){ return String(x).trim(); }).filter(Boolean);
+      if(!lines.length) return;
+
+      var existing = new Map(items.map(function(it){ return [String(it.name).toLowerCase(), it]; }));
+
+      for(var k=0; k<lines.length; k++){
+        var parsed = parseLine(lines[k]);
+        if(!parsed || !parsed.name) continue;
+        var key = String(parsed.name).toLowerCase();
+
+        if(existing.has(key)){
+          var ref = existing.get(key);
+          ref.qty = clampQty(ref.qty + parsed.qty);
+        }else{
+          var item = {
+            id: uid(),
+            name: parsed.name,
+            qty: parsed.qty,
+            done: false,
+            createdAt: Date.now()
+          };
+          items.push(item);
+          existing.set(key, item);
+        }
+      }
+
+      for(var k2=0; k2<lines.length; k2++){
+        var parsed2 = parseLine(lines[k2]);
+        if(parsed2 && parsed2.name) learn(parsed2.name);
+      }
+
+      sortItems();
+      save();
+      render();
+    }
+
+    function sortItems(){
+      items.sort(function(a,b){
+        if(!!a.done !== !!b.done) return a.done ? 1 : -1;
+        return (a.createdAt||0) - (b.createdAt||0);
+      });
+    }
+
+    function setMarketMode(on){
+      marketMode = !!on;
+      appEl.classList.toggle('market', marketMode);
+      marketSwitch.classList.toggle('on', marketMode);
+      marketSwitch.setAttribute('aria-checked', String(marketMode));
+      save();
+    }
+
+    function computeProgress(){
+      var total = items.length;
+      var done = 0;
+      for(var i=0; i<items.length; i++) if(items[i].done) done++;
+      var pct = total ? Math.round((done/total)*100) : 0;
+      return { total: total, done: done, pct: pct };
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .split('&').join('&amp;')
+        .split('<').join('&lt;')
+        .split('>').join('&gt;')
+        .split('"').join('&quot;')
+        .split("'").join('&#039;');
+    }
+
+    function renderChips(){
+      var entries = Object.values(catalog || {});
+      entries.sort(function(a,b){
+        if((b.count||0) !== (a.count||0)) return (b.count||0) - (a.count||0);
+        return (b.lastUsed||0) - (a.lastUsed||0);
+      });
+
+      var top = entries.slice(0, 10);
+      learnBadge.textContent = 'Sugestões: ' + top.length;
+      chips.innerHTML = '';
+      chipsTitle.style.visibility = top.length ? 'visible' : 'hidden';
+
+      for(var i=0; i<top.length; i++){
+        var it = top[i];
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip';
+        btn.innerHTML = '<b>＋</b> ' + escapeHtml(it.name);
+        (function(name){
+          btn.addEventListener('click', function(){ addItemsFromText(name); });
+        })(it.name);
+        chips.appendChild(btn);
+      }
+    }
+
+    function render(){
+      emptyHint.style.visibility = items.length ? 'hidden' : 'visible';
+      clearListBtn.disabled = !items.length;
+
+      var p = computeProgress();
+      count.textContent = p.total + (p.total === 1 ? ' item' : ' itens');
+      progressText.textContent = p.pct + '% concluído';
+      progressNums.textContent = p.done + '/' + p.total;
+      barFill.style.width = p.pct + '%';
+
+      list.innerHTML = '';
+      sortItems();
+
+      items.forEach(function(item){
+        var li = document.createElement('li');
+        li.className = 'item' + (item.done ? ' done' : '');
+
+        var left = document.createElement('div');
+        left.className = 'left';
+
+        var check = document.createElement('input');
+        check.type = 'checkbox';
+        check.className = 'check';
+        check.checked = !!item.done;
+        check.addEventListener('change', function(){
+          item.done = check.checked;
+          sortItems();
+          save();
+          render();
+        });
+
+        var qty = document.createElement('div');
+        qty.className = 'qty';
+
+        var minus = document.createElement('button');
+        minus.type = 'button';
+        minus.textContent = '−';
+        minus.addEventListener('click', function(){
+          item.qty = clampQty(item.qty - 1);
+          save();
+          render();
+        });
+
+        var q = document.createElement('span');
+        q.textContent = String(item.qty);
+
+        var plus = document.createElement('button');
+        plus.type = 'button';
+        plus.textContent = '+';
+        plus.addEventListener('click', function(){
+          item.qty = clampQty(item.qty + 1);
+          save();
+          render();
+        });
+
+        qty.append(minus, q, plus);
+
+        var text = document.createElement('div');
+        text.className = 'text';
+        text.textContent = item.name;
+
+        left.append(check, qty, text);
+
+        var remove = document.createElement('button');
+        remove.className = 'icon-btn';
+        remove.type = 'button';
+        remove.setAttribute('aria-label', 'Remover');
+        remove.textContent = '✕';
+        remove.addEventListener('click', function(){
+          items = items.filter(function(x){ return x.id !== item.id; });
+          save();
+          render();
+        });
+
+        li.append(left, remove);
+        list.appendChild(li);
+      });
+
+      renderChips();
+    }
+
+    addBulkBtn.addEventListener('click', function(){
+      addItemsFromText(bulk.value);
+      bulk.value = '';
+    });
+
+    clearBulkBtn.addEventListener('click', function(){
+      bulk.value = '';
+      bulk.focus();
+    });
+
+    clearListBtn.addEventListener('click', function(){
+      items = [];
+      save();
+      render();
+    });
+
+    bulk.addEventListener('keydown', function(e){
+      // Atalho: Ctrl/Cmd + Enter adiciona
+      if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+        e.preventDefault();
+        addBulkBtn.click();
+      }
+    });
+
+    function toggleMarket(){
+      setMarketMode(!marketMode);
+      render();
+    }
+    marketSwitch.addEventListener('click', toggleMarket);
+    marketSwitch.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMarket(); }
+    });
+
+    // Testes simples (console)
+    function assert(label, cond){ if(!cond) throw new Error('Teste falhou: ' + label); console.log('✓', label); }
+    (function(){
+      var a = parseLine('2x Pão');
+      var b = parseLine('Leite x3');
+      var c = parseLine('Banana 5');
+      var d = parseLine('Suco');
+      assert('Parse 2x', a.qty === 2 && a.name.toLowerCase() === 'pão');
+      assert('Parse x3', b.qty === 3 && b.name.toLowerCase() === 'leite');
+      assert('Parse final 5', c.qty === 5 && c.name.toLowerCase() === 'banana');
+      assert('Parse sem qty', d.qty === 1 && d.name.toLowerCase() === 'suco');
+    })();
+
+    load();
+    setMarketMode(marketMode);
+    render();
+  </script>
+</body>
+</html>
